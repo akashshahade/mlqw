@@ -1,0 +1,145 @@
+Final Algorithm Structure
+Step 1: Preprocessing
+Inputs:
+
+Internal_Temp(t)
+Ambient_Temp(t)
+ΔIA(t)=InternalTemp(t)−Ambient Temp(t)
+
+Check for:NaN, 0 → Mark as invalid
+Optional: Interpolate or skip
+
+update thresholds
+upper -
+lower -
+
+Derivatives
+ΔT(t)= ΔIA(t)−ΔIA(t−1) /5
+
+Second derivative (
+​
+Spike Duration Logic
+Maintain a spike counter:
+
+If ΔIA > Upper for ≥ 3 readings → Persistent Rise
+If ΔIA > Upper only once → Transient Spike
+
+Thermal Load Index (TLI)
+Numerical sum over ΔIA
+TLI (w) = i=t−w∑tΔIA(i)
+
+
+
+Step 7: Rolling Baseline Tracking
+
+
+
+
+================================================================================================
+
+
+### 🔄 Final Adaptive Temperature Monitoring Algorithm – Flowchart Style
+
+---
+
+#### 🟦 Step 1: Input & Preprocessing
+
+* Input: Internal\_Temp(t), Ambient\_Temp(t)
+* Compute:
+
+  * ΔIA(t) = Internal\_Temp - Ambient\_Temp
+  * Validate: If NaN or 0 → mark as invalid
+
+---
+
+#### 🟨 Step 2: Rolling Statistics
+
+* Windows: 1 Hour (12), 1 Day (288), 1 Week (2016)
+* For each window:
+
+  * Compute Rolling Mean (μ)
+  * Compute Rolling Std Dev (σ)
+
+---
+
+#### 🟧 Step 3: Adaptive Thresholds (Ambient-linked)
+
+* Upper\_Threshold = Ambient + μ + σ
+* Lower\_Threshold = Ambient + μ - σ
+* Optionally cap: Upper ≤ Ambient + 65
+
+---
+
+#### 🟪 Step 4: Derivatives
+
+* First Derivative (Gradient):
+
+  * ΔT(t) = ΔIA(t) - ΔIA(t-1)
+* Second Derivative (Curvature):
+
+  * Δ2T(t) = ΔIA(t) - 2ΔIA(t-1) + ΔIA(t-2)
+
+---
+
+#### 🟥 Step 5: Spike Logic
+
+* Maintain spike\_counter
+* If ΔIA > Upper:
+
+  * Increment spike\_counter
+  * If spike\_counter ≥ 3 → Critical Spike
+* Else:
+
+  * Reset spike\_counter
+
+---
+
+#### 🟩 Step 6: Thermal Load Index (TLI)
+
+* For each window:
+
+  * TLI(w) = ∑ ΔIA
+  * Smooth using EWMA:
+
+    * EWMA\_t = α ⋅ x\_t + (1-α) ⋅ EWMA\_{t-1}
+
+---
+
+#### 🟫 Step 7: Long-Term Baseline
+
+* ΔIA\_baseline = RollingMean(ΔIA over 1w)
+* Drift = μ\_1d - ΔIA\_baseline
+* If Drift > σ\_baseline → Aging or Shift
+
+---
+
+#### 🟨 Step 8: System State Classification
+
+* **Stable:** ΔIA in range, low ΔT, low TLI
+* **Warning:** ΔT > threshold, moderate TLI
+* **Critical:** ΔIA > Upper, Δ2T > 0, TLI ↑↑
+* **Fault:** ΔIA = 0 or NaN, or ΔIA << Lower
+* **Aging:** μ drifting up slowly, high TLI\_1w
+
+---
+
+#### ✅ Output:
+
+* System State per Window
+* Optional Alerts (Warning/Critical/Fault)
+* Trend Forecast (optional future ΔIA)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
